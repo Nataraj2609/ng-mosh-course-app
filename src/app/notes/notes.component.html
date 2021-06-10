@@ -1,0 +1,21 @@
+<h1>Sticky Notes</h1>
+<br />
+
+<input
+  type="text"
+  (keyup.enter)="createTask(inputTask)"
+  #inputTask
+  class="form-control"
+/>
+<br />
+<ul class="list-group">
+  <li *ngFor="let task of tasks" class="list-group-item">
+    <span [ngClass]="{ checked: task.isCompleted }">{{ task.todo }}</span>
+        <button class="btn btn-primary btn-sm float-right" (click)="completeTask(task)">
+        Mark it complete
+        </button>
+        <button class="btn btn-danger btn-sm float-right" (click)="deleteTask(task)">
+        Delete
+        </button>
+  </li>
+</ul>
