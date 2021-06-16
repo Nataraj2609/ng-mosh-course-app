@@ -1365,6 +1365,130 @@ https://dev-72542490.okta.com/oauth2/default/.well-known/oauth-authorization-ser
 https://dev-72542490.okta.com/oauth2/default/v1/authorize?response_type=code&client_id=0oawnpfrvCafsJ4bv5d6&redirect_uri=https://www.example.com&client_secret=mb2r7ndFswFN80I0ObcKnXhWE0ECrgimjo927l-S
 
 
+### Cognito Aws Integration
+
+Callback URL: http://localhost:4200/home
+Signout URL : http://localhost:4200/logout
+
+HOME:
+
+welcome {{ username }}
+
+Login
+Admin
+Logout
+
+
+https://pocexample.auth.us-west-2.amazoncognito.com/login?client_id=5puctv0a9k5ne847fvs37pllcm&response_type=code&scope=email+openid&redirect_uri=http://localhost:4200/home
+
+http://localhost:4200/home?code=0835a4ce-cf2f-423a-83ca-e1bb917f7e6f
+
+Now in Home Component, I need to get Code Query Parameter
+
+    this.route.queryParamMap.subscribe(Response => this.paramMap = Response);
+
+Now we need to call oauth2/token
+
+
+	We need to send client id secrets and all in body as x-www-form-urlencoded in body.
+
+		https://gist.github.com/dherges/442d3a7bc65e3e46d8dead728e4d8be8
+
+				login(user: string, password: string): Observable<boolean> {
+			    const body = new HttpParams()
+			      .set(`user`, user)
+			      .set(`password`, password);
+			    const headers = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
+
+			    return this.http.post(`auth/login`, body.toString(), { headers, observe: 'response' })
+			      .map((res: HttpResponse<Object>) => res.ok)
+			      .catch((err: any) => Observable.of(false));
+			  }
+
+	access_token: "eyJraWQiOiJrMnZKRFc4aHhuTVwvaTlnNHpYU00wQ1RlZDN5VW12ZWc0Vjl3WEU5NUFudz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJmMzk0ODBkOC03ODMzLTQxM2ItYjI3OS04ODc5M2YzNWIxYTciLCJ0b2tlbl91c2UiOiJhY2Nlc3MiLCJzY29wZSI6Im9wZW5pZCBlbWFpbCIsImF1dGhfdGltZSI6MTYyMzM5NDMxOSwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLnVzLXdlc3QtMi5hbWF6b25hd3MuY29tXC91cy13ZXN0LTJfT1oyNmc4Zm9wIiwiZXhwIjoxNjIzMzk3OTE5LCJpYXQiOjE2MjMzOTQzMTksInZlcnNpb24iOjIsImp0aSI6IjhjZTVlNzk4LTJmZjItNDA0Zi1hYTUyLTQyNWUzNzU2NTM2MSIsImNsaWVudF9pZCI6IjVwdWN0djBhOWs1bmU4NDdmdnMzN3BsbGNtIiwidXNlcm5hbWUiOiJuYXQifQ.U2DRnF_i5--4OnCvbTA9NhCYodiyEfQSN48I7KVLQxgR9WH6fNPbUWS6sR9e3uWifFEdaSScfsjyJ9bQd3Tgmob5DBCaq9QJn6gNlDfGwf4TfyJe_hWhgt_zYg0M6uAK2Wcg5P2V6Noj1mwVS4XNWAQL3n6V33O31vZQP5Ap9KNP0uhAr4MP4MJpAPiaVr3eDq-x7Th7ew_4J6FovPNR41dVvHEGJtjs-g6PNG5Wx3JHDCI8ZrLEsdcLnenX2xLYu1q91-XiAg53YuLazIvL4mSOFp4Plas0ztJ83M__RLILUVJ4YG9_cFXa7F3S_-J8hw7BtSnMt-2C2fnY4iDwUQ"
+	expires_in: 3600
+	
+	id_token: "eyJraWQiOiJRVTdmM2FKUXJqTlA5MmxCeDNYXC9JYWZ4a21aWUYwN3RtcjNCRGl5ZnVTUT0iLCJhbGciOiJSUzI1NiJ9.eyJhdF9oYXNoIjoiVkd3NUNfakdaalU4Sk1JR29WeTJLZyIsInN1YiI6ImYzOTQ4MGQ4LTc4MzMtNDEzYi1iMjc5LTg4NzkzZjM1YjFhNyIsImF1ZCI6IjVwdWN0djBhOWs1bmU4NDdmdnMzN3BsbGNtIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNjIzMzk0MzE5LCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtd2VzdC0yLmFtYXpvbmF3cy5jb21cL3VzLXdlc3QtMl9PWjI2Zzhmb3AiLCJjb2duaXRvOnVzZXJuYW1lIjoibmF0IiwiZXhwIjoxNjIzMzk3OTE5LCJpYXQiOjE2MjMzOTQzMTksImVtYWlsIjoibmF0YXJhai5tYW5pdmFubmFuQGlkZWFzMml0LmNvbSJ9.exJxGaB5xNO6puDcOhz9IJc0hX4-whMXPdHLNkrM9-qrjYS4Ok8dvVBQ2SGaLm39KqWSh5pu2nI7WcyQSAV6q8gTz37njbK2e9oLmFIPtHJpk4p7N87wdDyLTR4Yad-x3SFtxWIz2iljstN05sChiJj0pDYh7642ktHQSHqlxG8u8k1rxjEhQ1i-rZ2ltksaQjopubWamCGiE_Z9ERrWllDRJ0Xpcdpp5vqNlx1Gi16XIc6oGLFq5ylV4nFlvcwH1dcRM-W1pjlDlVSTqEdWYGJvDbZdv5g58d0eLrM5RMFf9ifJHGL2DQcIvoMBNvZwpRCGShMbA7x4adWAFAv0bw"
+	
+	refresh_token: "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.Ck8s9JKUtuUoPBcxwMOyejxfr-8OdouYgH_Y2QUjfbMztBJtPhpnaOzXpY0Nd8rfe7ak-hCd5bnxOWGoF_0MoLu3_YvoYbO2oibZuJmrKBigvNdVyavVKJTwqKPOPUcTtZRiC_b8FGeKAUWG4kr-bSGleDlQPCkW2djlJVobkArkEMQ5NDXV4saJzdpMRJOHKkaWBIbJzaYgXYCfMEe-pQiy6RoamIguOFAM2d91Uppemt7bcuMQmYkvAawPGYjRWQRTt1RmV2ovGJdvp9yw7Q5RQufD6AcLb3vcx-aJQteTGkEs4QqdTUD3d0rNFgupkAgnWsmRq1TcO8tUFuUaKA.O4z9ME8PuqT9Rht7.ncSHtE1tke5CTsI9rpo5jUJRmw8UpWZ_milZb07nHXRk26IDqG-F65FPEulGZbY-DiWkdM7SBdutTeUh5x7VlyI3hmWW9sjyfXV5sZZ99D1c_VZhsTBI31hCgluzh_-BiNL0Gl7ZvGHzZP6NuPergorzC5kWt4KpBHi7MK3Pd_-5Hj7NTHBaNiq7Z-Wg1pkRGJV6PC_B2SPKibfby0dGwZJFvJDGeHGAA9pmfiFDPIA507yihN5qY2l_GbgOERNVNZHfEPsnxRP9qceey9rjuZKuOsl0nc4M-imjHJZoZ2oFNbkRP9TnX7eO-u4ue6z3YwboRlTnUoeYaaijK6YImhDkMiWGakLamts1o8Bj5VfBHcI8RxggIC6zFibOHvfgjalCzmQ5vcHvP0Wb2nd2NEF-MwV43ALZ2hXq46Lqbl3M330THQOmeXWfaIWJo3XkZov2brx4Qwwgxl52iFzrNG-IEKL-lRcJfywBsc5egAPIXaAmjLe_5EP0kTNt7-NZHJRpcznM0L9gLikytLbnIbv0v8uA4tK65Po2kuknO6RrsVAUR65t_Y6IdqUr4nx01XZvGAuFkrqkcoNHKXBMdFUTSjnngsxoAQxQVmCu7ih13FamFmz2SHDH5ece6357mGnZaufyuDOs2g-6ewT-hGvuUgfw8vcGtgOac82FBDDH5Zb5ryK8lJwoFQ8wCe9z9UijCReWRg3Qnv2lFzhkchA5JcSSaGfVp_SrkffGE6JLdx7CiKImPfnlFvNncBGWqmuvVppeIK6eYDev9hHKhRdICmb6F56vi-SFDHvPxaJpiwYxkJHb0y3KtcvA6boR1NlHtMEb-ldzw-2NAO0NnhNzjp9aeB5-sozNh0Q8I93ANYenpDWB9x6T8R5QarxVSX1iXGdobjSk_i79jjHGuAzzCB9jHA9NbDLlO9jAJ4HA4Eq9eI6nGxZwnZJqIYqgv1pmeSTaBjCxZbtECT1xE_JfxSI03nPgiWAql54vBL08YZ-59nwUfmkEnw5BjDGkFvajEOmRrWQqxZEKbmRl4-GYRJ4H4BKdDRJepA1YTEZ5-XynKFygZ9zGnnNHishKMBxUNK5Gm6rjYB7Mi1HysBn2wgTQN99pKDlXtixCfBUikCXXm0xq3KcUCIKCJbcU0Em8m2PXOk5F2dD7EzgZUkqdK04MtXcg4A.wUJsY7r4APwJfDBK-_6QiQ"
+
+	token_type: "Bearer"
+
+Saved id_token in local storage
+
+Now we will embed guarded Api in Admin Service & will access it in /admin page
+
+
+### canActivate Interface to guard url - access denied pages
+
+routeGuard is used.
+
+	ng g s services/auth-guard
+
+	1. Change class name to AuthGuard
+
+    2. implements canActivate interface
+
+    3. provide logic for canActivate() method
+
+    4. constructor(
+		    private router: Router
+		    ) { }
+
+		  canActivate() {
+		    if(localStorage.getItem('id_token'))
+		      return true;
+		    this.router.navigate(['/home']);
+		    return false;
+		  }
+
+	5. Finally in routing module,
+
+	  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard] },
+
+### redirectUrl working
+
+when logged out, accessing admin page will redirect to /login?redirectUrl="/admin"
+
+In the canActivate method,
+
+	 canActivate(route: any, state: RouterStateSnapshot) {
+	    if (localStorage.getItem('id_token'))
+	      return true;
+	    this.router.navigate(['/login'], { queryParams: { redirectUrl: state.url } });
+	    return false;
+	  }
+
+
+In the Login Component,
+
+		  constructor(
+		    private route: ActivatedRoute,
+		    private router: Router
+		  ) { }
+
+		  ngOnInit(): void {
+		    let redirectUrl = this.route.snapshot.queryParamMap.get('redirectUrl');
+		    this.router.navigate([redirectUrl || '/']);
+		  }
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Optimisation techniques
+
+Minification - removing spaces & unwanted comments
+Uglification - reducing variable name to short ones
+Bundling - Angular cli will do auto
+Dead code elimination
+Ahead Time of Compilation 
+
+
+All these can be done by 
+
+ng build --prod
+
+
+
 
 
 
